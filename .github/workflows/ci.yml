@@ -17,9 +17,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build image
         run: 
-            docker build -t mfamari/my-resume .
+            docker build -t mfaumea/my-resume .
 
       - name: Push image
         run: 
             docker login -u mfaumea -p ${{secrets.REGISTRY_PASS}}
-            docker push mfamari/my-resume
+            docker push mfaumea/my-resume
