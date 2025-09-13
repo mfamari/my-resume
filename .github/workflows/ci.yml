@@ -1,0 +1,25 @@
+
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: 
+            docker build -t mfaumea/portfolio .
+
+      - name: Push image
+        run: 
+            docker login -u mfaumea -p ${{secrets.REGISTRY_PASS}}
+            docker push mfaumea/portfolio
