@@ -21,4 +21,4 @@ jobs:
       - name: Login and push image
         run: |
           docker login -u mfaumea -p Mfamari@1989
-          docker push
+          docker push mfaumea/my-resume
