@@ -20,5 +20,5 @@ jobs:
 
       - name: Login and push image
         run: |
-          docker login -u ${{secrets.REGISTRY_USERNAME}} -p ${{secrets.REGISTRYPASS}}
+          docker login -u "${{secrets.REGISTRY_USERNAME}}"" -p "${{secrets.REGISTRYPASS}}""
           docker push ${{secrets.REGISTRY_USERNAME}}/my-resume
