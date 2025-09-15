@@ -26,3 +26,18 @@ jobs:
           docker push ${{secrets.REGISTRY_USERNAME}}/my-resume:${{github.run_number}}
           docker push ${{secrets.REGISTRY_USERNAME}}/my-resume
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      -name: SSH to server
+      -uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: linuxserver.io
+          key: ${{ secrets.KEY }}
+          #port: ${{ secrets.PORT }}
+          script: |
+                  docker rm -f resume
+                  docker run -d --name resume -p 8080:5001 ${{secrets.REGISTRY_USERNAME}}/my-resume:${{github.run_number}}
