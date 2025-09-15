@@ -32,12 +32,12 @@ jobs:
 
     steps:
       -name: SSH to server
-      -uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: linuxserver.io
-          key: ${{ secrets.KEY }}
-          #port: ${{ secrets.PORT }}
-          script: |
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        # port: ${{ secrets.PORT }}
+        script: |
                   docker rm -f resume
                   docker run -d --name resume -p 8080:5001 ${{secrets.REGISTRY_USERNAME}}/my-resume:${{github.run_number}}
