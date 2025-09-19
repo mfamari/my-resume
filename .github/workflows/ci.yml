@@ -36,7 +36,7 @@ jobs:
         run: |
           set -e
           IMAGE_TAG="${{ github.run_number }}"
-          IMAGE_URI=388252587708.dkr.ecr.us-east-1.amazonaws.com/my-resume
+          IMAGE_URI="${{ secrets.ECR_REGISTRY }}"
 
           docker build -t "$IMAGE_URI:$IMAGE_TAG" -t "$IMAGE_URI:latest" .
 
@@ -46,7 +46,7 @@ jobs:
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 388252587708.dkr.ecr.us-east-1.amazonaws.com/my-resume:${{ github.run_number }}
+          image-ref: ${{ secrets.ECR_REGISTRY }}:${{ github.run_number }}
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 388252587708.dkr.ecr.us-east-1.amazonaws.com
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
             docker rm -f resume || true
-            docker pull 388252587708.dkr.ecr.us-east-1.amazonaws.com/my-resume:${{ github.run_number }}
-            docker run -d --name resume -p 8080:5001 388252587708.dkr.ecr.us-east-1.amazonaws.com/my-resume:${{ github.run_number }}
+            docker pull ${{ secrets.ECR_REGISTRY }}/my-resume:${{ github.run_number }}
+            docker run -d --name resume -p 8080:5001 ${{ secrets.ECR_REGISTRY }}/my-resume:${{ github.run_number }}
