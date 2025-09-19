@@ -21,21 +21,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names "${{ secrets.ECR_REPOSITORY }}" --region "${{ secrets.AWS_REGION }}" || \
+          aws ecr create-repository --repository-name "${{ secrets.ECR_REPOSITORY }}" --region "${{ secrets.AWS_REGION }}"
+
       - name: Login to Amazon ECR
         id: login-ecr
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+          aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" | \
+          docker login --username AWS --password-stdin "${{ secrets.ECR_REGISTRY }}"
 
       - name: Build, tag, and push Docker image to ECR
         run: |
-          IMAGE_TAG=${{ github.run_number }}
-          IMAGE_URI=${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}
+          set -e
+          IMAGE_TAG="${{ github.run_number }}"
+          IMAGE_URI="${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}"
 
-          docker build -t $IMAGE_URI:$IMAGE_TAG .
-          docker build -t $IMAGE_URI:latest .
+          docker build -t "$IMAGE_URI:$IMAGE_TAG" -t "$IMAGE_URI:latest" .
 
-          docker push $IMAGE_URI:$IMAGE_TAG
-          docker push $IMAGE_URI:latest
+          docker push "$IMAGE_URI:$IMAGE_TAG"
+          docker push "$IMAGE_URI:latest"
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -51,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH to server
+      - name: SSH to server and deploy container
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
@@ -59,4 +65,5 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             docker rm -f resume || true
-            docker run -d --name resume -p 8080:5001 ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}
+            docker pull "${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}"
+            docker run -d --name resume -p 8080:5001 "${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}"
