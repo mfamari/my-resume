@@ -57,13 +57,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH to server and deploy container
+     # - name: SSH to server and deploy container
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            docker rm -f resume || true
-            docker pull "${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}"
-            docker run -d --name resume -p 8080:5001 "${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}"
+            aws ecr get-login-password --region us-east-1 \
+              | docker login --username AWS \
+              --password-stdin 388252587708.dkr.ecr.us-east-1.amazonaws.com
+
+            docker pull 388252587708.dkr.ecr.us-east-1.amazonaws.com/my-resume:${{ github.run_number }}
+
+            docker stop my-resume || true
+            docker rm my-resume || true
+
+            docker run -d --name my-resume -p 80:80 388252587708.dkr.ecr.us-east-1.amazonaws.com/my-resume:${{ github.run_number }}
+
