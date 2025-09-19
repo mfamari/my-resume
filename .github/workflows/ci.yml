@@ -66,5 +66,5 @@ jobs:
           script: |
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "${{ secrets.ECR_REGISTRY }}"
             docker rm -f resume || true
-            docker pull "${{ secrets.ECR_REGISTRY }}/my-resume:${{ github.run_number }}"
-            docker run -d --name resume -p 8080:5001 "${{ secrets.ECR_REGISTRY }}/my-resume:${{ github.run_number }}"
+            docker pull "${{ secrets.ECR_REGISTRY }}:${{ github.run_number }}"
+            docker run -d --name resume -p 8080:5001 "${{ secrets.ECR_REGISTRY }}:${{ github.run_number }}"
